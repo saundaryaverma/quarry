@@ -1,0 +1,17 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Build and run all tests (including 600 random differential queries)
+        run: ./build.sh
+      - name: Run a heavier differential pass
+        run: java -ea -Dquarry.queries=3000 -cp build/classes:build/test-classes quarry.TestRunner
+      - name: Benchmark smoke test (1M rows)
+        run: java -jar build/quarry.jar bench --rows 1000000 --runs 3
